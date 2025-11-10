@@ -14,6 +14,7 @@ import {
   setCartId,
 } from "./cookies"
 import { getRegion } from "./regions"
+import { calculatePriceForShippingOption } from "./fulfillment"
 
 /**
  * Retrieves a cart by its ID. If no ID is provided, it will use the cart ID from the cookies.
@@ -217,19 +218,44 @@ export async function deleteLineItem(lineId: string) {
 export async function setShippingMethod({
   cartId,
   shippingMethodId,
+  shouldRecalculate,
+  defer,
 }: {
   cartId: string
   shippingMethodId: string
+  shouldRecalculate?: boolean
+  defer?: boolean
 }) {
   const headers = {
     ...(await getAuthHeaders()),
   }
 
+  if (defer) {
+    // Store the user's choice without attaching a shipping method yet
+    return sdk.store.cart
+      .update(cartId, { metadata: { selected_shipping_option_id: shippingMethodId } }, {}, headers)
+      .then(async () => {
+        const cartCacheTag = await getCacheTag("carts")
+        revalidateTag(cartCacheTag)
+      })
+      .catch(medusaError)
+  }
+
   return sdk.store.cart
     .addShippingMethod(cartId, { option_id: shippingMethodId }, {}, headers)
     .then(async () => {
+      // If we already have addresses set (i.e. after address step) and the option is calculated, recalc price now
+      if (shouldRecalculate) {
+        try {
+          await calculatePriceForShippingOption(shippingMethodId, cartId)
+        } catch (e) {
+          // swallow; calculation failure will keep placeholder amount
+        }
+      }
       const cartCacheTag = await getCacheTag("carts")
       revalidateTag(cartCacheTag)
+      const fulfillmentCacheTag = await getCacheTag("fulfillment")
+      revalidateTag(fulfillmentCacheTag)
     })
     .catch(medusaError)
 }
@@ -373,13 +399,43 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         province: formData.get("billing_address.province"),
         phone: formData.get("billing_address.phone"),
       }
-    await updateCart(data)
+    // Update cart with addresses first
+    const updated = await updateCart(data)
+
+    // If user pre-selected a shipping option earlier (stored in metadata), attach it now
+    const selectedFromMeta = (updated as any)?.metadata?.selected_shipping_option_id as string | undefined
+    const hasShippingMethod = (updated?.shipping_methods?.length ?? 0) > 0
+
+    const shippingOptionId = hasShippingMethod
+      ? updated!.shipping_methods!.at(-1)!.shipping_option_id
+      : selectedFromMeta
+
+    if (shippingOptionId && !hasShippingMethod) {
+      // Attach method to cart after addresses are set
+      await sdk.store.cart.addShippingMethod(updated!.id, { option_id: shippingOptionId }, {}, {
+        ...(await getAuthHeaders()),
+      })
+    }
+
+    // After addresses are set and method attached, calculate price if needed
+    const lastMethod = (await retrieveCart(updated!.id, '+shipping_methods.name'))?.shipping_methods?.at(-1)
+    if (shippingOptionId && (typeof lastMethod?.amount !== "number" || lastMethod?.amount === null)) {
+      try {
+        await calculatePriceForShippingOption(shippingOptionId, updated!.id)
+      } catch (e) {
+        // ignore calc failure
+      }
+    }
+
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
   } catch (e: any) {
     return e.message
   }
 
+  // Move to payment step now that shipping cost can be calculated
   redirect(
-    `/${formData.get("shipping_address.country_code")}/checkout?step=delivery`
+    `/${formData.get("shipping_address.country_code")}/checkout?step=payment`
   )
 }
 
