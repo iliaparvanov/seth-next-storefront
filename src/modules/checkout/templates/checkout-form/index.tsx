@@ -18,6 +18,7 @@ export default async function CheckoutForm({
   }
 
   const shippingMethods = await listCartShippingMethods(cart.id)
+  console.log(shippingMethods)
   const paymentMethods = await listCartPaymentMethods(cart.region?.id ?? "")
 
   if (!shippingMethods || !paymentMethods) {
@@ -30,7 +31,11 @@ export default async function CheckoutForm({
       <Shipping cart={cart} availableShippingMethods={shippingMethods} />
 
       {/* Step 2: Address after shipping */}
-      <Addresses cart={cart} customer={customer} />
+      <Addresses 
+        cart={cart} 
+        customer={customer} 
+        availableShippingMethods={shippingMethods}
+      />
 
       <Payment cart={cart} availablePaymentMethods={paymentMethods} />
 

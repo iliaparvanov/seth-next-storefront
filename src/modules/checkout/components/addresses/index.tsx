@@ -2,6 +2,11 @@
 
 import { setAddresses } from "@lib/data/cart"
 import compareAddresses from "@lib/util/compare-addresses"
+import { 
+  getShippingAddressType, 
+  getShippingProviderId,
+  type ShippingOption 
+} from "@lib/util/shipping-type"
 import { CheckCircleSolid } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { Heading, Text, useToggleState } from "@medusajs/ui"
@@ -11,15 +16,31 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useActionState } from "react"
 import BillingAddress from "../billing_address"
 import ErrorMessage from "../error-message"
+import OfficeAddress from "../office-address"
 import ShippingAddress from "../shipping-address"
 import { SubmitButton } from "../submit-button"
+
+// Type for shipping option from cart
+type CartShippingOption = {
+  id: string
+  name: string
+  provider_id: string
+  type?: {
+    id: string
+    label: string
+    description: string
+    code: string
+  } | null
+}
 
 const Addresses = ({
   cart,
   customer,
+  availableShippingMethods,
 }: {
   cart: HttpTypes.StoreCart | null
   customer: HttpTypes.StoreCustomer | null
+  availableShippingMethods: CartShippingOption[] | null
 }) => {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -38,6 +59,29 @@ const Addresses = ({
   }
 
   const [message, formAction] = useActionState(setAddresses, null)
+
+  // Determine address type based on selected shipping method
+  // Check both cart.shipping_methods (attached) and cart.metadata (deferred selection)
+  const attachedShippingMethod = cart?.shipping_methods?.at(-1)
+  const selectedShippingOptionId = attachedShippingMethod?.shipping_option_id 
+    || (cart?.metadata as any)?.selected_shipping_option_id
+
+  // Find the full shipping option from available methods
+  const selectedFullOption = availableShippingMethods?.find(
+    (method) => method.id === selectedShippingOptionId
+  )
+
+  const shippingOption: ShippingOption | undefined = selectedFullOption
+    ? {
+        id: selectedFullOption.id,
+        name: selectedFullOption.name,
+        provider_id: selectedFullOption.provider_id,
+        type: selectedFullOption.type || null,
+      }
+    : undefined
+
+  const addressType = getShippingAddressType(shippingOption)
+  const providerId = getShippingProviderId(shippingOption)
 
   return (
     <div className="bg-white">
@@ -64,12 +108,22 @@ const Addresses = ({
       {isOpen ? (
         <form action={formAction}>
           <div className="pb-8">
-            <ShippingAddress
-              customer={customer}
-              checked={sameAsBilling}
-              onChange={toggleSameAsBilling}
-              cart={cart}
-            />
+            {addressType === "office" ? (
+              <OfficeAddress
+                customer={customer}
+                checked={sameAsBilling}
+                onChange={toggleSameAsBilling}
+                cart={cart}
+                providerId={providerId}
+              />
+            ) : (
+              <ShippingAddress
+                customer={customer}
+                checked={sameAsBilling}
+                onChange={toggleSameAsBilling}
+                cart={cart}
+              />
+            )}
 
             {!sameAsBilling && (
               <div>
@@ -84,7 +138,7 @@ const Addresses = ({
               </div>
             )}
             <SubmitButton className="mt-6" data-testid="submit-address-button">
-              See shipping cost
+              {addressType === "office" ? "Continue to payment" : "See shipping cost"}
             </SubmitButton>
             <ErrorMessage error={message} data-testid="address-error-message" />
           </div>
@@ -100,23 +154,31 @@ const Addresses = ({
                     data-testid="shipping-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                      Shipping Address
+                      {addressType === "office" ? "Office Details" : "Shipping Address"}
                     </Text>
                     <Text className="txt-medium text-ui-fg-subtle">
                       {cart.shipping_address.first_name}{" "}
                       {cart.shipping_address.last_name}
                     </Text>
-                    <Text className="txt-medium text-ui-fg-subtle">
-                      {cart.shipping_address.address_1}{" "}
-                      {cart.shipping_address.address_2}
-                    </Text>
-                    <Text className="txt-medium text-ui-fg-subtle">
-                      {cart.shipping_address.postal_code},{" "}
-                      {cart.shipping_address.city}
-                    </Text>
-                    <Text className="txt-medium text-ui-fg-subtle">
-                      {cart.shipping_address.country_code?.toUpperCase()}
-                    </Text>
+                    {addressType === "office" ? (
+                      <Text className="txt-medium text-ui-fg-subtle">
+                        Office: {cart.shipping_address.address_1}
+                      </Text>
+                    ) : (
+                      <>
+                        <Text className="txt-medium text-ui-fg-subtle">
+                          {cart.shipping_address.address_1}{" "}
+                          {cart.shipping_address.address_2}
+                        </Text>
+                        <Text className="txt-medium text-ui-fg-subtle">
+                          {cart.shipping_address.postal_code},{" "}
+                          {cart.shipping_address.city}
+                        </Text>
+                        <Text className="txt-medium text-ui-fg-subtle">
+                          {cart.shipping_address.country_code?.toUpperCase()}
+                        </Text>
+                      </>
+                    )}
                   </div>
 
                   <div
