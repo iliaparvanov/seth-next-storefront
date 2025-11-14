@@ -2,21 +2,21 @@ import { HttpTypes } from "@medusajs/types"
 import { Container } from "@medusajs/ui"
 import Checkbox from "@modules/common/components/checkbox"
 import Input from "@modules/common/components/input"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useImperativeHandle, forwardRef } from "react"
+import CityAutocomplete from "../city-autocomplete"
+import OfficeAutocomplete from "../office-autocomplete"
+import { type CitySearchResult, type OfficeSearchResult } from "@lib/data/shipping"
 
-const OfficeAddress = ({
-  customer,
-  cart,
-  checked,
-  onChange,
-  providerId,
-}: {
-  customer: HttpTypes.StoreCustomer | null
-  cart: HttpTypes.StoreCart | null
-  checked: boolean
-  onChange: () => void
-  providerId?: string | null
-}) => {
+const OfficeAddress = forwardRef<
+  { validateForm: () => boolean },
+  {
+    customer: HttpTypes.StoreCustomer | null
+    cart: HttpTypes.StoreCart | null
+    checked: boolean
+    onChange: () => void
+    providerId?: string | null
+  }
+>(({ customer, cart, checked, onChange, providerId }, ref) => {
   const [formData, setFormData] = useState<Record<string, any>>({
     "shipping_address.first_name": cart?.shipping_address?.first_name || "",
     "shipping_address.last_name": cart?.shipping_address?.last_name || "",
@@ -27,6 +27,11 @@ const OfficeAddress = ({
     "shipping_address.country_code": cart?.shipping_address?.country_code || cart?.region?.countries?.[0]?.iso_2 || "",
     email: cart?.email || "",
   })
+
+  const [selectedCity, setSelectedCity] = useState<CitySearchResult | null>(null)
+  const [selectedOffice, setSelectedOffice] = useState<OfficeSearchResult | null>(null)
+  const [cityError, setCityError] = useState<string | null>(null)
+  const [officeError, setOfficeError] = useState<string | null>(null)
 
   useEffect(() => {
     if (cart && cart.shipping_address) {
@@ -57,12 +62,71 @@ const OfficeAddress = ({
     })
   }
 
+  const handleCitySelect = (city: CitySearchResult | null) => {
+    setSelectedCity(city)
+    setCityError(null)
+    
+    // Reset office selection when city changes
+    if (selectedOffice && city?.data.city_id !== selectedOffice.data.city_id) {
+      setSelectedOffice(null)
+      setOfficeError(null)
+      setFormData({
+        ...formData,
+        "shipping_address.address_1": "",
+      })
+    }
+  }
+
+  const handleOfficeSelect = (office: OfficeSearchResult | null) => {
+    setSelectedOffice(office)
+    setOfficeError(null)
+    
+    if (office) {
+      // Update form data with office details
+      setFormData({
+        ...formData,
+        "shipping_address.address_1": office.data.office_name,
+      })
+    } else {
+      // Clear office data
+      setFormData({
+        ...formData,
+        "shipping_address.address_1": "",
+      })
+    }
+  }
+
+  const validateForm = () => {
+    let isValid = true
+    
+    if (!selectedCity) {
+      setCityError("Please select a city from the list")
+      isValid = false
+    } else {
+      setCityError(null)
+    }
+    
+    if (!selectedOffice) {
+      setOfficeError("Please select an office from the list")
+      isValid = false
+    } else {
+      setOfficeError(null)
+    }
+    
+    return isValid
+  }
+
+  // Expose validateForm to parent component via ref
+  useImperativeHandle(ref, () => ({
+    validateForm,
+  }))
+
   return (
     <>
       {customer && (
         <Container className="mb-6 flex flex-col gap-y-4 p-5">
           <p className="text-small-regular">
-            {`Hi ${customer.first_name}, please provide the office details for delivery.`}
+            {`Hi ${customer.first_name}, please select an office for pickup delivery.`}
           </p>
         </Container>
       )}
@@ -89,14 +153,58 @@ const OfficeAddress = ({
           />
         </div>
         
-        <Input
-          label="Office name"
+        <div>
+          <label className="block text-sm font-medium text-ui-fg-base mb-2">
+            City <span className="text-rose-500">*</span>
+          </label>
+          <CityAutocomplete
+            provider={providerId || "econt"}
+            value={selectedCity}
+            onChange={handleCitySelect}
+            error={cityError || undefined}
+            required
+            data-testid="city-input"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-ui-fg-base mb-2">
+            Office location <span className="text-rose-500">*</span>
+          </label>
+          <OfficeAutocomplete
+            provider={providerId || "econt"}
+            cityId={selectedCity?.data.city_id || null}
+            value={selectedOffice}
+            onChange={handleOfficeSelect}
+            error={officeError || undefined}
+            required
+            disabled={!selectedCity}
+            data-testid="office-name-input"
+          />
+        </div>
+
+        {/* Hidden field to store the selected office name */}
+        <input
+          type="hidden"
           name="shipping_address.address_1"
           value={formData["shipping_address.address_1"]}
-          onChange={handleChange}
-          required
-          data-testid="office-name-input"
         />
+
+        {/* Hidden fields to store city and office metadata as JSON */}
+        {selectedCity && (
+          <input
+            type="hidden"
+            name="city_metadata"
+            value={JSON.stringify(selectedCity.data)}
+          />
+        )}
+        {selectedOffice && (
+          <input
+            type="hidden"
+            name="office_metadata"
+            value={JSON.stringify(selectedOffice.data)}
+          />
+        )}
 
         {/* Hidden field to maintain country_code requirement */}
         <input
@@ -151,6 +259,8 @@ const OfficeAddress = ({
       )}
     </>
   )
-}
+})
+
+OfficeAddress.displayName = "OfficeAddress"
 
 export default OfficeAddress

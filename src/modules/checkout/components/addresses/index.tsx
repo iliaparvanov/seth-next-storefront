@@ -13,7 +13,7 @@ import { Heading, Text, useToggleState } from "@medusajs/ui"
 import Divider from "@modules/common/components/divider"
 import Spinner from "@modules/common/icons/spinner"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useActionState } from "react"
+import { useActionState, useRef } from "react"
 import BillingAddress from "../billing_address"
 import ErrorMessage from "../error-message"
 import OfficeAddress from "../office-address"
@@ -59,6 +59,8 @@ const Addresses = ({
   }
 
   const [message, formAction] = useActionState(setAddresses, null)
+  
+  const officeAddressRef = useRef<{ validateForm: () => boolean }>(null)
 
   // Determine address type based on selected shipping method
   // Check both cart.shipping_methods (attached) and cart.metadata (deferred selection)
@@ -83,6 +85,16 @@ const Addresses = ({
   const addressType = getShippingAddressType(shippingOption)
   const providerId = getShippingProviderId(shippingOption)
 
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    // Validate office selection if it's an office delivery
+    if (addressType === "office" && officeAddressRef.current) {
+      if (!officeAddressRef.current.validateForm()) {
+        event.preventDefault()
+        return
+      }
+    }
+  }
+
   return (
     <div className="bg-white">
       <div className="flex flex-row items-center justify-between mb-6">
@@ -106,10 +118,11 @@ const Addresses = ({
         )}
       </div>
       {isOpen ? (
-        <form action={formAction}>
+        <form action={formAction} onSubmit={handleFormSubmit}>
           <div className="pb-8">
             {addressType === "office" ? (
               <OfficeAddress
+                ref={officeAddressRef}
                 customer={customer}
                 checked={sameAsBilling}
                 onChange={toggleSameAsBilling}
