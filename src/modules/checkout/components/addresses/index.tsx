@@ -61,6 +61,7 @@ const Addresses = ({
   const [message, formAction] = useActionState(setAddresses, null)
   
   const officeAddressRef = useRef<{ validateForm: () => boolean }>(null)
+  const shippingAddressRef = useRef<{ validateForm: () => boolean }>(null)
 
   // Determine address type based on selected shipping method
   // Check both cart.shipping_methods (attached) and cart.metadata (deferred selection)
@@ -89,6 +90,14 @@ const Addresses = ({
     // Validate office selection if it's an office delivery
     if (addressType === "office" && officeAddressRef.current) {
       if (!officeAddressRef.current.validateForm()) {
+        event.preventDefault()
+        return
+      }
+    }
+    
+    // Validate shipping address if it's a regular delivery
+    if (addressType !== "office" && shippingAddressRef.current) {
+      if (!shippingAddressRef.current.validateForm()) {
         event.preventDefault()
         return
       }
@@ -131,10 +140,12 @@ const Addresses = ({
               />
             ) : (
               <ShippingAddress
+                ref={shippingAddressRef}
                 customer={customer}
                 checked={sameAsBilling}
                 onChange={toggleSameAsBilling}
                 cart={cart}
+                providerId={providerId}
               />
             )}
 
