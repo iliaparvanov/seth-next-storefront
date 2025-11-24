@@ -379,9 +379,16 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         country_code: formData.get("shipping_address.country_code"),
         province: formData.get("shipping_address.province"),
         phone: formData.get("shipping_address.phone"),
+        metadata: {} as Record<string, any>,
       },
       email: formData.get("email"),
     } as any
+
+    // Add office_code to shipping address metadata if present
+    const officeCode = formData.get("shipping_address.metadata.office_code")
+    if (officeCode) {
+      data.shipping_address.metadata.office_code = officeCode
+    }
 
     const sameAsBilling = formData.get("same_as_billing")
     if (sameAsBilling === "on") data.billing_address = data.shipping_address
@@ -414,12 +421,16 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
       // Attach method to cart after addresses are set
       await sdk.store.cart.addShippingMethod(updated!.id, { option_id: shippingOptionId }, {}, {
         ...(await getAuthHeaders()),
+      }).then(async () => {
+        const cartCacheTag = await getCacheTag("carts")
+        revalidateTag(cartCacheTag)
       })
+      .catch(medusaError)
     }
 
     // After addresses are set and method attached, calculate price if needed
     const lastMethod = (await retrieveCart(updated!.id, '+shipping_methods.name'))?.shipping_methods?.at(-1)
-    if (shippingOptionId && (typeof lastMethod?.amount !== "number" || lastMethod?.amount === null)) {
+    if (shippingOptionId && lastMethod && (typeof lastMethod?.amount !== "number" || lastMethod?.amount === null)) {
       try {
         await calculatePriceForShippingOption(shippingOptionId, updated!.id)
       } catch (e) {
@@ -516,7 +527,7 @@ export async function listCartOptions() {
   }
 
   return await sdk.client.fetch<{
-    shipping_options: HttpTypes.StoreCartShippingOption[]
+    shipping_options: HttpTypes.StoreShippingOption[]
   }>("/store/shipping-options", {
     query: { cart_id: cartId },
     next,

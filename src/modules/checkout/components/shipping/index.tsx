@@ -1,7 +1,7 @@
 "use client"
 
 import { Radio, RadioGroup } from "@headlessui/react"
-import { setShippingMethod } from "@lib/data/cart"
+import { setShippingMethod, updateCart } from "@lib/data/cart"
 import { convertToLocale } from "@lib/util/money"
 import { CheckCircleSolid } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
@@ -17,7 +17,7 @@ const PICKUP_OPTION_OFF = "__PICKUP_OFF"
 
 type ShippingProps = {
   cart: HttpTypes.StoreCart
-  availableShippingMethods: HttpTypes.StoreCartShippingOption[] | null
+  availableShippingMethods: HttpTypes.StoreShippingOption[] | null
 }
 
 function formatAddress(address: HttpTypes.StoreCartAddress) {
@@ -84,20 +84,31 @@ const Shipping: React.FC<ShippingProps> = ({
     }
   }, [availableShippingMethods])
 
-  const handleEdit = () => {
+  const handleEdit = async () => {
+    // Clear addresses when user goes back to change shipping method
+    if (cart.shipping_address || cart.billing_address) {
+      try {
+        await updateCart({
+          shipping_address: null as any,
+          billing_address: null as any,
+        })
+      } catch (err) {
+        console.error("Failed to clear addresses:", err)
+      }
+    }
     router.push(pathname + "?step=delivery", { scroll: false })
   }
 
   const handleSubmit = () => {
-    // If address already provided, proceed directly to payment; otherwise go to address entry
-    const nextStep = cart.shipping_address ? "payment" : "address"
-    router.push(`${pathname}?step=${nextStep}`, { scroll: false })
+    // Always go to address entry to ensure address matches the selected shipping method
+    router.push(`${pathname}?step=address`, { scroll: false })
   }
 
   const handleSetShippingMethod = async (
     id: string,
     variant: "shipping" | "pickup"
   ) => {
+    console.log("Setting shipping method to:", id, "variant:", variant)
     setError(null)
 
     if (variant === "pickup") {
@@ -113,12 +124,24 @@ const Shipping: React.FC<ShippingProps> = ({
       return id
     })
 
+    // If addresses were already set and user is changing the shipping method, clear them
     const addressesSet = !!cart.shipping_address
+    if (addressesSet && currentId !== id) {
+      try {
+        await updateCart({
+          shipping_address: null as any,
+          billing_address: null as any,
+        })
+      } catch (err) {
+        console.error("Failed to clear addresses:", err)
+      }
+    }
+
     await setShippingMethod({
       cartId: cart.id,
       shippingMethodId: id,
-      shouldRecalculate: addressesSet,
-      defer: !addressesSet,
+      shouldRecalculate: false, // Don't recalculate since we just cleared addresses
+      defer: true, // Always defer since addresses will be cleared/not set
     })
       .catch((err) => {
         setShippingMethodId(currentId)

@@ -37,6 +37,7 @@ export const calculatePriceForShippingOption = async (
   cartId: string,
   data?: Record<string, unknown>
 ) => {
+  console.log(`optionId: ${optionId}, cartId: ${cartId}, data:`, data)
   const headers = {
     ...(await getAuthHeaders()),
   }

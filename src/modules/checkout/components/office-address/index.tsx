@@ -82,10 +82,10 @@ const OfficeAddress = forwardRef<
     setOfficeError(null)
     
     if (office) {
-      // Update form data with office details
+      // Update form data with office details - prepend 'Офис' to the office name
       setFormData({
         ...formData,
-        "shipping_address.address_1": office.data.office_name,
+        "shipping_address.address_1": `Офис ${office.data.office_name}`,
       })
     } else {
       // Clear office data
@@ -199,11 +199,18 @@ const OfficeAddress = forwardRef<
           />
         )}
         {selectedOffice && (
-          <input
-            type="hidden"
-            name="office_metadata"
-            value={JSON.stringify(selectedOffice.data)}
-          />
+          <>
+            <input
+              type="hidden"
+              name="office_metadata"
+              value={JSON.stringify(selectedOffice.data)}
+            />
+            <input
+              type="hidden"
+              name="shipping_address.metadata.office_code"
+              value={selectedOffice.data.office_code}
+            />
+          </>
         )}
 
         {/* Hidden field to maintain country_code requirement */}
@@ -213,9 +220,17 @@ const OfficeAddress = forwardRef<
           value={formData["shipping_address.country_code"]}
         />
         
-        {/* Hidden fields for required but unused address fields */}
-        <input type="hidden" name="shipping_address.postal_code" value="00000" />
-        <input type="hidden" name="shipping_address.city" value="Office" />
+        {/* Hidden fields for required address fields - use office data */}
+        <input 
+          type="hidden" 
+          name="shipping_address.postal_code" 
+          value={selectedOffice?.data.office_code || "00000"} 
+        />
+        <input 
+          type="hidden" 
+          name="shipping_address.city" 
+          value={selectedOffice?.data.city_name || "Офис"} 
+        />
         <input type="hidden" name="shipping_address.province" value="" />
         <input type="hidden" name="shipping_address.company" value="" />
       </div>
