@@ -388,6 +388,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
     const officeCode = formData.get("shipping_address.metadata.office_code")
     if (officeCode) {
       data.shipping_address.metadata.office_code = officeCode
+      console.log("Added office_code to shipping address metadata:", officeCode)
     }
 
     const sameAsBilling = formData.get("same_as_billing")
@@ -411,13 +412,13 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
 
     // If user pre-selected a shipping option earlier (stored in metadata), attach it now
     const selectedFromMeta = (updated as any)?.metadata?.selected_shipping_option_id as string | undefined
-    const hasShippingMethod = (updated?.shipping_methods?.length ?? 0) > 0
+    const currentShippingMethod = updated?.shipping_methods?.at(-1)
+    
+    // Use metadata selection if available, otherwise fall back to current method
+    const shippingOptionId = selectedFromMeta || currentShippingMethod?.shipping_option_id
 
-    const shippingOptionId = hasShippingMethod
-      ? updated!.shipping_methods!.at(-1)!.shipping_option_id
-      : selectedFromMeta
-
-    if (shippingOptionId && !hasShippingMethod) {
+    // If we have a target option and it's different from what's currently attached (or nothing is attached), update it
+    if (shippingOptionId && shippingOptionId !== currentShippingMethod?.shipping_option_id) {
       // Attach method to cart after addresses are set
       await sdk.store.cart.addShippingMethod(updated!.id, { option_id: shippingOptionId }, {}, {
         ...(await getAuthHeaders()),

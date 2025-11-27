@@ -326,136 +326,138 @@ const ShippingAddress = forwardRef<
           />
         </Container>
       )}
-      <div className="grid grid-cols-2 gap-4">
-        <Input
-          label="First name"
-          name="shipping_address.first_name"
-          autoComplete="given-name"
-          value={formData["shipping_address.first_name"]}
-          onChange={handleChange}
-          required
-          data-testid="shipping-first-name-input"
-        />
-        <Input
-          label="Last name"
-          name="shipping_address.last_name"
-          autoComplete="family-name"
-          value={formData["shipping_address.last_name"]}
-          onChange={handleChange}
-          required
-          data-testid="shipping-last-name-input"
-        />
-      </div>
-
-      {/* City Search */}
-      <div>
-        <label className="block text-sm font-medium text-ui-fg-base mb-2">
-          City <span className="text-rose-500">*</span>
-        </label>
-        <CityAutocomplete
-          provider={providerId || "econt_econt"}
-          value={selectedCity}
-          onChange={handleCitySelect}
-          error={cityError || undefined}
-          required
-          data-testid="city-input"
-        />
-      </div>
-
-      {/* Quarter Search */}
-      <div>
-        <label className="block text-sm font-medium text-ui-fg-base mb-2">
-          Quarter (квартал)
-        </label>
-        <QuarterAutocomplete
-          provider={providerId || "econt_econt"}
-          cityId={selectedCity?.data.city_id || null}
-          value={selectedQuarter}
-          onChange={handleQuarterSelect}
-          error={quarterError || undefined}
-          disabled={!selectedCity}
-          data-testid="quarter-input"
-        />
-      </div>
-
-      {/* Street Search */}
-      <div>
-        <label className="block text-sm font-medium text-ui-fg-base mb-2">
-          Street
-        </label>
-        <StreetAutocomplete
-          provider={providerId || "econt_econt"}
-          cityId={selectedCity?.data.city_id || null}
-          value={selectedStreet}
-          onChange={handleStreetSelect}
-          error={streetError || undefined}
-          disabled={!selectedCity}
-          data-testid="street-input"
-        />
-      </div>
-
-      {/* Address validation error */}
-      {addressValidationError && (
-        <div className="text-sm text-rose-500 p-3 bg-rose-50 rounded-md" data-testid="address-validation-error">
-          {addressValidationError}
+      <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="First name"
+            name="shipping_address.first_name"
+            autoComplete="given-name"
+            value={formData["shipping_address.first_name"]}
+            onChange={handleChange}
+            required
+            data-testid="shipping-first-name-input"
+          />
+          <Input
+            label="Last name"
+            name="shipping_address.last_name"
+            autoComplete="family-name"
+            value={formData["shipping_address.last_name"]}
+            onChange={handleChange}
+            required
+            data-testid="shipping-last-name-input"
+          />
         </div>
-      )}
 
-      <div className="grid grid-cols-2 gap-4">
-        {/* Street Number - Required (or Blok) */}
-        <Input
-          label="Number (номер)"
-          name="street_number"
-          value={formData.street_number}
-          onChange={handleNumberChange}
-          data-testid="street-number-input"
-        />
-        {/* Blok - Required (or Number) */}
-        <Input
-          label="Blok (блок)"
-          name="blok"
-          value={formData.blok}
-          onChange={handleBlokChange}
-          data-testid="blok-input"
-        />
-      </div>
+        {/* City Search */}
+        <div>
+          <label className="block text-sm font-medium text-ui-fg-base mb-2">
+            City <span className="text-rose-500">*</span>
+          </label>
+          <CityAutocomplete
+            provider={providerId || "econt_econt"}
+            value={selectedCity}
+            onChange={handleCitySelect}
+            error={cityError || undefined}
+            required
+            data-testid="city-input"
+          />
+        </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Input
-          label="Entrance (вход)"
-          name="entrance"
-          value={formData.entrance}
-          onChange={handleAddressDetailsChange}
-          data-testid="entrance-input"
-        />
-        <Input
-          label="Floor (етаж)"
-          name="floor"
-          value={formData.floor}
-          onChange={handleAddressDetailsChange}
-          data-testid="floor-input"
-        />
-      </div>
+        {/* Quarter Search */}
+        <div>
+          <label className="block text-sm font-medium text-ui-fg-base mb-2">
+            Quarter (квартал)
+          </label>
+          <QuarterAutocomplete
+            provider={providerId || "econt_econt"}
+            cityId={selectedCity?.data.city_id || null}
+            value={selectedQuarter}
+            onChange={handleQuarterSelect}
+            error={quarterError || undefined}
+            disabled={!selectedCity}
+            data-testid="quarter-input"
+          />
+        </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Input
-          label="Apartment (апартамент)"
-          name="apartment"
-          value={formData.apartment}
-          onChange={handleAddressDetailsChange}
-          data-testid="apartment-input"
-        />
-      </div>
+        {/* Street Search */}
+        <div>
+          <label className="block text-sm font-medium text-ui-fg-base mb-2">
+            Street
+          </label>
+          <StreetAutocomplete
+            provider={providerId || "econt_econt"}
+            cityId={selectedCity?.data.city_id || null}
+            value={selectedStreet}
+            onChange={handleStreetSelect}
+            error={streetError || undefined}
+            disabled={!selectedCity}
+            data-testid="street-input"
+          />
+        </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Input
-          label="Company"
-          name="shipping_address.company"
-          value={formData["shipping_address.company"]}
-          onChange={handleChange}
-          autoComplete="organization"
-          data-testid="shipping-company-input"
-        />
+        {/* Address validation error */}
+        {addressValidationError && (
+          <div className="text-sm text-rose-500 p-3 bg-rose-50 rounded-md" data-testid="address-validation-error">
+            {addressValidationError}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-4">
+          {/* Street Number - Required (or Blok) */}
+          <Input
+            label="Number (номер)"
+            name="street_number"
+            value={formData.street_number}
+            onChange={handleNumberChange}
+            data-testid="street-number-input"
+          />
+          {/* Blok - Required (or Number) */}
+          <Input
+            label="Blok (блок)"
+            name="blok"
+            value={formData.blok}
+            onChange={handleBlokChange}
+            data-testid="blok-input"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="Entrance (вход)"
+            name="entrance"
+            value={formData.entrance}
+            onChange={handleAddressDetailsChange}
+            data-testid="entrance-input"
+          />
+          <Input
+            label="Floor (етаж)"
+            name="floor"
+            value={formData.floor}
+            onChange={handleAddressDetailsChange}
+            data-testid="floor-input"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="Apartment (апартамент)"
+            name="apartment"
+            value={formData.apartment}
+            onChange={handleAddressDetailsChange}
+            data-testid="apartment-input"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <Input
+            label="Company"
+            name="shipping_address.company"
+            value={formData["shipping_address.company"]}
+            onChange={handleChange}
+            autoComplete="organization"
+            data-testid="shipping-company-input"
+          />
+        </div>
       </div>
 
       {/* Hidden fields to store the constructed address values */}

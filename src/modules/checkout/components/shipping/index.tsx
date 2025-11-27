@@ -89,8 +89,8 @@ const Shipping: React.FC<ShippingProps> = ({
     if (cart.shipping_address || cart.billing_address) {
       try {
         await updateCart({
-          shipping_address: null as any,
-          billing_address: null as any,
+          shipping_address: {} as any,
+          billing_address: {} as any,
         })
       } catch (err) {
         console.error("Failed to clear addresses:", err)
@@ -129,8 +129,7 @@ const Shipping: React.FC<ShippingProps> = ({
     if (addressesSet && currentId !== id) {
       try {
         await updateCart({
-          shipping_address: null as any,
-          billing_address: null as any,
+          region_id: cart.region_id
         })
       } catch (err) {
         console.error("Failed to clear addresses:", err)

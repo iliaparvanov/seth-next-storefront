@@ -65,9 +65,10 @@ const Addresses = ({
 
   // Determine address type based on selected shipping method
   // Check both cart.shipping_methods (attached) and cart.metadata (deferred selection)
+  // Prioritize metadata selection as it represents the most recent user choice
   const attachedShippingMethod = cart?.shipping_methods?.at(-1)
-  const selectedShippingOptionId = attachedShippingMethod?.shipping_option_id 
-    || (cart?.metadata as any)?.selected_shipping_option_id
+  const selectedShippingOptionId = (cart?.metadata as any)?.selected_shipping_option_id 
+    || attachedShippingMethod?.shipping_option_id
 
   // Find the full shipping option from available methods
   const selectedFullOption = availableShippingMethods?.find(
