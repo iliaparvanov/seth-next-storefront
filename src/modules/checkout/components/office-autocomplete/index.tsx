@@ -57,11 +57,11 @@ export default function OfficeAutocomplete({
             setOffices(results)
             
             if (results.length === 0) {
-              setSearchError("No offices found for this search")
+              setSearchError("Няма намерени офиси за това търсене")
             }
           } catch (err) {
             console.error("Office search error:", err)
-            setSearchError("Failed to search offices. Please try again.")
+            setSearchError("Неудача при търсене на офиси. Моля, опитайте отново.")
             setOffices([])
           } finally {
             setLoading(false)
@@ -121,7 +121,7 @@ export default function OfficeAutocomplete({
               )}
               displayValue={(office: OfficeSearchResult | null) => office?.data.office_name || ""}
               onChange={handleInputChange}
-              placeholder={!cityId ? "Please select a city first" : "Search for an office or browse all..."}
+              placeholder={!cityId ? "Първо изберете град" : "Търсете офис или преглед на всички..."}
               required={required}
               disabled={disabled || !cityId}
               data-testid={dataTestId}
@@ -146,7 +146,7 @@ export default function OfficeAutocomplete({
           >
             {offices.length === 0 && !loading && cityId ? (
               <div className="px-4 py-3 text-sm text-ui-fg-subtle">
-                No offices found. Try a different search term.
+                Няма намерени офиси. Опитайте със друг термин.
               </div>
             ) : (
               offices.map((office) => (
@@ -189,7 +189,7 @@ export default function OfficeAutocomplete({
       )}
 
       <p className="text-xs text-ui-fg-subtle">
-        {!cityId ? "Select a city to see available offices" : "Search or browse all offices in the selected city"}
+        {!cityId ? "Изберете град, за да видите налични офиси" : "Търсете или преглеждайте всички офиси в избрания град"}
       </p>
     </div>
   )

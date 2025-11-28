@@ -57,11 +57,11 @@ export default function QuarterAutocomplete({
             setQuarters(results)
             
             if (results.length === 0 && searchQuery.trim().length >= 2) {
-              setSearchError("No quarters found for this search")
+              setSearchError("Няма намерени райони за това търсене")
             }
           } catch (err) {
             console.error("Quarter search error:", err)
-            setSearchError("Failed to search quarters. Please try again.")
+            setSearchError("Неудача при търсене на райони. Моля, опитайте отново.")
             setQuarters([])
           } finally {
             setLoading(false)
@@ -121,7 +121,7 @@ export default function QuarterAutocomplete({
               )}
               displayValue={(quarter: QuarterSearchResult | null) => quarter?.data.quarter_name || ""}
               onChange={handleInputChange}
-              placeholder={disabled ? "Select a city first..." : "Search for a quarter..."}
+              placeholder={disabled ? "Първо изберете град..." : "Търсете район..."}
               required={required}
               data-testid={dataTestId}
             />
@@ -145,7 +145,7 @@ export default function QuarterAutocomplete({
           >
             {quarters.length === 0 && query.trim().length >= 2 && !loading ? (
               <div className="px-4 py-3 text-sm text-ui-fg-subtle">
-                No quarters found. Try a different search term.
+                Няма намерени райони. Опитайте със друг термин.
               </div>
             ) : (
               quarters.map((quarter) => (
@@ -184,7 +184,7 @@ export default function QuarterAutocomplete({
 
       {!disabled && (
         <p className="text-xs text-ui-fg-subtle">
-          Start typing to search for your quarter
+          Започнете писане, за да търсите вашия район
         </p>
       )}
     </div>

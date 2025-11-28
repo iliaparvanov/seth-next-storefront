@@ -112,7 +112,7 @@ const Addresses = ({
           level="h2"
           className="flex flex-row text-3xl-regular gap-x-2 items-baseline"
         >
-          Shipping Address
+          Адрес за доставка
           {!isOpen && <CheckCircleSolid />}
         </Heading>
         {!isOpen && cart?.shipping_address && (
@@ -122,7 +122,7 @@ const Addresses = ({
               className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
               data-testid="edit-address-button"
             >
-              Edit
+              Редактирай
             </button>
           </Text>
         )}
@@ -156,14 +156,14 @@ const Addresses = ({
                   level="h2"
                   className="text-3xl-regular gap-x-4 pb-6 pt-8"
                 >
-                  Billing address
+                  Адрес за фактуриране
                 </Heading>
 
                 <BillingAddress cart={cart} />
               </div>
             )}
             <SubmitButton className="mt-6" data-testid="submit-address-button">
-              {addressType === "office" ? "Continue to payment" : "See shipping cost"}
+              {addressType === "office" ? "Продължи към плащане" : "Виж цена за доставка"}
             </SubmitButton>
             <ErrorMessage error={message} data-testid="address-error-message" />
           </div>
@@ -179,7 +179,7 @@ const Addresses = ({
                     data-testid="shipping-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                      {addressType === "office" ? "Office Details" : "Shipping Address"}
+                      {addressType === "office" ? "Детайли за офиса" : "Адрес за доставка"}
                     </Text>
                     <Text className="txt-medium text-ui-fg-subtle">
                       {cart.shipping_address.first_name}{" "}
@@ -187,7 +187,7 @@ const Addresses = ({
                     </Text>
                     {addressType === "office" ? (
                       <Text className="txt-medium text-ui-fg-subtle">
-                        Office: {cart.shipping_address.address_1}
+                        Офис: {cart.shipping_address.address_1}
                       </Text>
                     ) : (
                       <>
@@ -211,7 +211,7 @@ const Addresses = ({
                     data-testid="shipping-contact-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                      Contact
+                      Контакт
                     </Text>
                     <Text className="txt-medium text-ui-fg-subtle">
                       {cart.shipping_address.phone}
@@ -226,12 +226,12 @@ const Addresses = ({
                     data-testid="billing-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                      Billing Address
+                      Адрес за фактуриране
                     </Text>
 
                     {sameAsBilling ? (
                       <Text className="txt-medium text-ui-fg-subtle">
-                        Billing and delivery address are the same.
+                        Адресът за фактуриране е същият като адреса за доставка.
                       </Text>
                     ) : (
                       <>

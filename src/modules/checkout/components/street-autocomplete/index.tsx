@@ -57,11 +57,11 @@ export default function StreetAutocomplete({
             setStreets(results)
             
             if (results.length === 0 && searchQuery.trim().length >= 2) {
-              setSearchError("No streets found for this search")
+              setSearchError("Няма намерени улици за това търсене")
             }
           } catch (err) {
             console.error("Street search error:", err)
-            setSearchError("Failed to search streets. Please try again.")
+            setSearchError("Неудача при търсене на улици. Моля, опитайте отново.")
             setStreets([])
           } finally {
             setLoading(false)
@@ -121,7 +121,7 @@ export default function StreetAutocomplete({
               )}
               displayValue={(street: StreetSearchResult | null) => street?.data.street_name || ""}
               onChange={handleInputChange}
-              placeholder={disabled ? "Select a city first..." : "Search for a street..."}
+              placeholder={disabled ? "Първо изберете град..." : "Търсете улица..."}
               required={required}
               data-testid={dataTestId}
             />
@@ -145,7 +145,7 @@ export default function StreetAutocomplete({
           >
             {streets.length === 0 && query.trim().length >= 2 && !loading ? (
               <div className="px-4 py-3 text-sm text-ui-fg-subtle">
-                No streets found. Try a different search term.
+                Няма намерени улици. Опитайте със друг термин.
               </div>
             ) : (
               streets.map((street) => (
@@ -184,7 +184,7 @@ export default function StreetAutocomplete({
 
       {!disabled && (
         <p className="text-xs text-ui-fg-subtle">
-          Start typing to search for your street
+          Започнете писане, за да търсите вашата улица
         </p>
       )}
     </div>

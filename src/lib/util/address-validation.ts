@@ -42,22 +42,22 @@ export function validateOfficeAddress(
 
   // Basic validation
   if (!officeName || officeName.trim().length === 0) {
-    errors.officeName = "Office name is required"
+    errors.officeName = "Име на офис е задължително"
   }
 
   // Validate that city was selected
   if (!cityData) {
-    errors.city = "Please select a city from the search results"
+    errors.city = "Моля изберете град от резултатите на търсене"
   }
 
   // Validate that office was selected from autocomplete (has structured data)
   if (!officeData) {
-    errors.officeName = "Please select an office from the search results"
+    errors.officeName = "Моля изберете офис от резултатите на търсене"
   }
 
   // Validate city and office match
   if (cityData && officeData && cityData.city_id !== officeData.city_id) {
-    errors.officeName = "Selected office does not match the selected city"
+    errors.officeName = "Избраният офис не отговаря на избрания град"
   }
 
   // Provider-specific validations
@@ -66,10 +66,10 @@ export function validateOfficeAddress(
       case "econt":
         // Validate Econt-specific fields
         if (!officeData.office_code || !officeData.office_id) {
-          errors.officeName = "Invalid Econt office data"
+          errors.officeName = "Невалидни данни за офис Econt"
         }
         if (!cityData.city_id) {
-          errors.city = "Invalid Econt city data"
+          errors.city = "Невалидни данни за град Econt"
         }
         break
       // Add more providers as needed
@@ -103,15 +103,15 @@ export function validateStandardAddress(
 
   // Basic validation
   if (!address.address_1 || address.address_1.trim().length === 0) {
-    errors.address_1 = "Address is required"
+    errors.address_1 = "Адресата е задължителна"
   }
 
   if (!address.postal_code || address.postal_code.trim().length === 0) {
-    errors.postal_code = "Postal code is required"
+    errors.postal_code = "Пощенския код е задължителен"
   }
 
   if (!address.city || address.city.trim().length === 0) {
-    errors.city = "City is required"
+    errors.city = "Градът е задължителен"
   }
 
   // TODO: Add provider-specific validations here

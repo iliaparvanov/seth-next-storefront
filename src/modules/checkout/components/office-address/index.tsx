@@ -100,14 +100,14 @@ const OfficeAddress = forwardRef<
     let isValid = true
     
     if (!selectedCity) {
-      setCityError("Please select a city from the list")
+      setCityError("Моля, изберете град от списъка")
       isValid = false
     } else {
       setCityError(null)
     }
     
     if (!selectedOffice) {
-      setOfficeError("Please select an office from the list")
+      setOfficeError("Моля, изберете офис от списъка")
       isValid = false
     } else {
       setOfficeError(null)
@@ -126,7 +126,7 @@ const OfficeAddress = forwardRef<
       {customer && (
         <Container className="mb-6 flex flex-col gap-y-4 p-5">
           <p className="text-small-regular">
-            {`Hi ${customer.first_name}, please select an office for pickup delivery.`}
+            {`Здравейте ${customer.first_name}, моля изберете офис за доставка.`}
           </p>
         </Container>
       )}
@@ -134,7 +134,7 @@ const OfficeAddress = forwardRef<
       <div className="grid grid-cols-1 gap-4">
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="First name"
+            label="Име"
             name="shipping_address.first_name"
             autoComplete="given-name"
             value={formData["shipping_address.first_name"]}
@@ -143,7 +143,7 @@ const OfficeAddress = forwardRef<
             data-testid="office-first-name-input"
           />
           <Input
-            label="Last name"
+            label="Фамилия"
             name="shipping_address.last_name"
             autoComplete="family-name"
             value={formData["shipping_address.last_name"]}
@@ -155,7 +155,7 @@ const OfficeAddress = forwardRef<
         
         <div>
           <label className="block text-sm font-medium text-ui-fg-base mb-2">
-            City <span className="text-rose-500">*</span>
+            Град <span className="text-rose-500">*</span>
           </label>
           <CityAutocomplete
             provider={providerId || "econt"}
@@ -169,7 +169,7 @@ const OfficeAddress = forwardRef<
 
         <div>
           <label className="block text-sm font-medium text-ui-fg-base mb-2">
-            Office location <span className="text-rose-500">*</span>
+            Офис <span className="text-rose-500">*</span>
           </label>
           <OfficeAutocomplete
             provider={providerId || "econt"}
@@ -237,7 +237,7 @@ const OfficeAddress = forwardRef<
 
       <div className="my-8">
         <Checkbox
-          label="Billing address same as shipping address"
+          label="Адресът за фактуриране е същият като адреса за доставка"
           name="same_as_billing"
           checked={checked}
           onChange={onChange}
@@ -247,10 +247,10 @@ const OfficeAddress = forwardRef<
 
       <div className="grid grid-cols-2 gap-4 mb-4">
         <Input
-          label="Email"
+          label="Имейл"
           name="email"
           type="email"
-          title="Enter a valid email address."
+          title="Въведете валиден имейл адрес."
           autoComplete="email"
           value={formData.email}
           onChange={handleChange}
@@ -258,7 +258,7 @@ const OfficeAddress = forwardRef<
           data-testid="office-email-input"
         />
         <Input
-          label="Phone"
+          label="Телефон"
           name="shipping_address.phone"
           autoComplete="tel"
           value={formData["shipping_address.phone"]}

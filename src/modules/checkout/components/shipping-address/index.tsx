@@ -28,6 +28,7 @@ const ShippingAddress = forwardRef<
     "shipping_address.company": cart?.shipping_address?.company || "",
     "shipping_address.postal_code": cart?.shipping_address?.postal_code || "",
     "shipping_address.city": cart?.shipping_address?.city || "",
+    "shipping_address.city_id": cart?.shipping_address?.metadata?.city_id || "",
     "shipping_address.country_code": "bg", // Hardcoded to Bulgaria
     "shipping_address.province": cart?.shipping_address?.province || "",
     "shipping_address.phone": cart?.shipping_address?.phone || "",
@@ -75,6 +76,7 @@ const ShippingAddress = forwardRef<
         "shipping_address.company": address?.company || "",
         "shipping_address.postal_code": address?.postal_code || "",
         "shipping_address.city": address?.city || "",
+        "shipping_address.city_id": address?.metadata?.city_id || "",
         "shipping_address.country_code": address?.country_code || "",
         "shipping_address.province": address?.province || "",
         "shipping_address.phone": address?.phone || "",
@@ -125,14 +127,14 @@ const ShippingAddress = forwardRef<
     const hasBuilding = hasNumber || hasBlok
     
     if (!hasLocation) {
-      setAddressValidationError("Please select at least a street or quarter")
-      if (!hasStreet) setStreetError("Required if quarter not provided")
-      if (!hasQuarter) setQuarterError("Required if street not provided")
+      setAddressValidationError("Моля, изберете поне улица или квартал")
+      if (!hasStreet) setStreetError("Задължително, ако не е посочен квартал")
+      if (!hasQuarter) setQuarterError("Задължително, ако не е посочена улица")
       return false
     }
     
     if (!hasBuilding) {
-      setAddressValidationError("Please enter at least a number or blok")
+      setAddressValidationError("Моля, въведете поне номер или блок")
       return false
     }
     
@@ -158,12 +160,14 @@ const ShippingAddress = forwardRef<
       setFormData({
         ...formData,
         "shipping_address.city": city.data.city_name,
+        "shipping_address.city_id": city.data.city_id,
         "shipping_address.postal_code": city.data.postal_code,
       })
     } else {
       setFormData({
         ...formData,
         "shipping_address.city": "",
+        "shipping_address.city_id": "",
         "shipping_address.postal_code": "",
       })
     }
@@ -313,7 +317,7 @@ const ShippingAddress = forwardRef<
       {customer && (addressesInRegion?.length || 0) > 0 && (
         <Container className="mb-6 flex flex-col gap-y-4 p-5">
           <p className="text-small-regular">
-            {`Hi ${customer.first_name}, do you want to use one of your saved addresses?`}
+            {`Здравейте ${customer.first_name}, искате ли да използвате някой от запазените си адреси?`}
           </p>
           <AddressSelect
             addresses={customer.addresses}
@@ -329,7 +333,7 @@ const ShippingAddress = forwardRef<
       <div className="grid grid-cols-1 gap-4">
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="First name"
+            label="Име"
             name="shipping_address.first_name"
             autoComplete="given-name"
             value={formData["shipping_address.first_name"]}
@@ -338,7 +342,7 @@ const ShippingAddress = forwardRef<
             data-testid="shipping-first-name-input"
           />
           <Input
-            label="Last name"
+            label="Фамилия"
             name="shipping_address.last_name"
             autoComplete="family-name"
             value={formData["shipping_address.last_name"]}
@@ -351,7 +355,7 @@ const ShippingAddress = forwardRef<
         {/* City Search */}
         <div>
           <label className="block text-sm font-medium text-ui-fg-base mb-2">
-            City <span className="text-rose-500">*</span>
+            Град <span className="text-rose-500">*</span>
           </label>
           <CityAutocomplete
             provider={providerId || "econt_econt"}
@@ -366,7 +370,7 @@ const ShippingAddress = forwardRef<
         {/* Quarter Search */}
         <div>
           <label className="block text-sm font-medium text-ui-fg-base mb-2">
-            Quarter (квартал)
+            Квартал
           </label>
           <QuarterAutocomplete
             provider={providerId || "econt_econt"}
@@ -382,7 +386,7 @@ const ShippingAddress = forwardRef<
         {/* Street Search */}
         <div>
           <label className="block text-sm font-medium text-ui-fg-base mb-2">
-            Street
+            Улица
           </label>
           <StreetAutocomplete
             provider={providerId || "econt_econt"}
@@ -405,7 +409,7 @@ const ShippingAddress = forwardRef<
         <div className="grid grid-cols-2 gap-4">
           {/* Street Number - Required (or Blok) */}
           <Input
-            label="Number (номер)"
+            label="Номер"
             name="street_number"
             value={formData.street_number}
             onChange={handleNumberChange}
@@ -413,7 +417,7 @@ const ShippingAddress = forwardRef<
           />
           {/* Blok - Required (or Number) */}
           <Input
-            label="Blok (блок)"
+            label="Блок"
             name="blok"
             value={formData.blok}
             onChange={handleBlokChange}
@@ -423,14 +427,14 @@ const ShippingAddress = forwardRef<
 
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="Entrance (вход)"
+            label="Вход"
             name="entrance"
             value={formData.entrance}
             onChange={handleAddressDetailsChange}
             data-testid="entrance-input"
           />
           <Input
-            label="Floor (етаж)"
+            label="Етаж"
             name="floor"
             value={formData.floor}
             onChange={handleAddressDetailsChange}
@@ -440,7 +444,7 @@ const ShippingAddress = forwardRef<
 
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="Apartment (апартамент)"
+            label="Апартамент"
             name="apartment"
             value={formData.apartment}
             onChange={handleAddressDetailsChange}
@@ -450,7 +454,7 @@ const ShippingAddress = forwardRef<
 
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="Company"
+            label="Фирма"
             name="shipping_address.company"
             value={formData["shipping_address.company"]}
             onChange={handleChange}
@@ -475,6 +479,11 @@ const ShippingAddress = forwardRef<
         type="hidden"
         name="shipping_address.city"
         value={formData["shipping_address.city"]}
+      />
+      <input
+        type="hidden"
+        name="shipping_address.city_id"
+        value={formData["shipping_address.city_id"]}
       />
       <input
         type="hidden"
@@ -516,7 +525,7 @@ const ShippingAddress = forwardRef<
       )}
       <div className="my-8">
         <Checkbox
-          label="Billing address same as shipping address"
+          label="Адресът за фактуриране е същият като адреса за доставка"
           name="same_as_billing"
           checked={checked}
           onChange={onChange}
@@ -525,10 +534,10 @@ const ShippingAddress = forwardRef<
       </div>
       <div className="grid grid-cols-2 gap-4 mb-4">
         <Input
-          label="Email"
+          label="Имейл"
           name="email"
           type="email"
-          title="Enter a valid email address."
+          title="Въведете валиден имейл адрес."
           autoComplete="email"
           value={formData.email}
           onChange={handleChange}
@@ -536,7 +545,7 @@ const ShippingAddress = forwardRef<
           data-testid="shipping-email-input"
         />
         <Input
-          label="Phone"
+          label="Телефон"
           name="shipping_address.phone"
           autoComplete="tel"
           value={formData["shipping_address.phone"]}

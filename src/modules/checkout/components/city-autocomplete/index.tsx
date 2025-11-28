@@ -53,11 +53,11 @@ export default function CityAutocomplete({
             setCities(results)
             
             if (results.length === 0 && searchQuery.trim().length >= 2) {
-              setSearchError("No cities found for this search")
+              setSearchError("Няма намерени градове за това търсене")
             }
           } catch (err) {
             console.error("City search error:", err)
-            setSearchError("Failed to search cities. Please try again.")
+            setSearchError("Неудача при търсене на градове. Моля, опитайте отново.")
             setCities([])
           } finally {
             setLoading(false)
@@ -113,7 +113,7 @@ export default function CityAutocomplete({
               )}
               displayValue={(city: CitySearchResult | null) => city?.data.city_name || ""}
               onChange={handleInputChange}
-              placeholder="Search for a city..."
+              placeholder="Търсете град..."
               required={required}
               data-testid={dataTestId}
             />
@@ -137,7 +137,7 @@ export default function CityAutocomplete({
           >
             {cities.length === 0 && query.trim().length >= 2 && !loading ? (
               <div className="px-4 py-3 text-sm text-ui-fg-subtle">
-                No cities found. Try a different search term.
+                Няма намерени градове. Опитайте със друг термин.
               </div>
             ) : (
               cities.map((city) => (
@@ -162,7 +162,7 @@ export default function CityAutocomplete({
                         {city.data.city_name}
                       </span>
                       <span className="text-xs text-ui-fg-subtle">
-                        Postal code: {city.data.postal_code}
+                        Пощенски код: {city.data.postal_code}
                       </span>
                     </div>
                   )}
@@ -180,7 +180,7 @@ export default function CityAutocomplete({
       )}
 
       <p className="text-xs text-ui-fg-subtle">
-        Start typing to search for your city
+        Започнете писане, за да търсите вашия град
       </p>
     </div>
   )
